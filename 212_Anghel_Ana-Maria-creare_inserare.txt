@@ -1,0 +1,731 @@
+1) Crearea tabelelor
+
+---Secventa:
+
+CREATE SEQUENCE id_staff 
+    START WITH 6  
+    INCREMENT BY 1  
+    MINVALUE 0  
+    MAXVALUE 1000  
+    CYCLE;  
+
+Exemplu de folosire:  
+INSERT INTO staff (id, numarPersoane, pretPeOra)  
+VALUES (id_staff.NEXTVAL, 20, 700); 
+
+---Tabelele:
+
+CREATE TABLE FashionWeeks(
+    id INT,
+    nume VARCHAR(20),
+    dataIncepere DATE,
+    dataIncheiere DATE,
+    PRIMARY KEY(id)
+);
+ALTER TABLE FashionWeeks MODIFY nume VARCHAR2(20);
+ALTER TABLE nume_tabel MODIFY nume_atribut NOUL_TIP_DE_DATE;
+
+CREATE TABLE CaseDeModa(
+     id INT,
+     nume VARCHAR2(20),
+     idDesignerPrincipal INT UNIQUE,
+     PRIMARY KEY(id)
+);
+
+CREATE TABLE Colectii(
+    id INT,
+    nume VARCHAR2(20),
+    tip VARCHAR2(20),
+    idCasaDeModa INT,
+    idFashionWeek INT,
+    PRIMARY KEY(id),
+    FOREIGN KEY (idCasaDeModa) REFERENCES CaseDeModa(id),
+    FOREIGN KEY (idFashionWeek) REFERENCES FashionWeeks(id)
+);
+
+CREATE TABLE Designeri(
+     id INT,
+     nume VARCHAR2(20),
+     specialitate VARCHAR2(20),
+     idCaseDeModa INT,
+     PRIMARY KEY(id),
+     FOREIGN KEY (idCaseDeModa) REFERENCES CaseDeModa(id)
+);
+
+ALTER TABLE CaseDeModa ADD CONSTRAINT FK_CheieStraina FOREIGN KEY (idDesignerPrincipal) REFERENCES Designeri(id);
+
+ALTER TABLE CaseDeModa MODIFY (idDesignerPrincipal UNIQUE);
+
+
+
+
+
+ALTER TABLE Colectii ADD idDesigner INT;
+
+ALTER TABLE Colectii
+ADD CONSTRAINT fk_idDesigner FOREIGN KEY (idDesigner) REFERENCES Designeri(id);
+
+ALTER TABLE Colectii
+DROP CONSTRAINT fk_idDesigner;
+
+
+-- Modifica tabela "Colectii" pentru a adauga cheia straina si referinta la cheia unica din tabela "Designeri"
+ALTER TABLE Colectii
+ADD CONSTRAINT fk_idDesigner FOREIGN KEY (idDesigner) REFERENCES Designeri(id);
+
+ALTER TABLE Colectii ADD idPiesaPrincipala INT;
+
+ALTER TABLE Colectii
+ADD CONSTRAINT fk_idPiesaP FOREIGN KEY (idPiesaPrincipala) REFERENCES Piese(id);
+
+ALTER TABLE Colectii
+ADD CONSTRAINT uq_Colectii UNIQUE (idPiesaPrincipala);
+
+ALTER TABLE Colectii ADD idRelatie INT;
+
+ALTER TABLE Colectii
+ADD CONSTRAINT fk_idRelatie FOREIGN KEY (idRelatie) REFERENCES Relatie(idConexiune);
+
+
+CREATE TABLE Piese(
+      id INT,
+      tip VARCHAR2(20),
+      cod CHAR(10),
+      material VARCHAR2(20),
+      pret INT,
+      idColectie INT,
+      PRIMARY KEY(id),
+      FOREIGN KEY (idColectie) REFERENCES Colectii(id)
+);
+
+CREATE TABLE Modele(
+       id NUMBER,
+       nume VARCHAR2(10),
+       prenume VARCHAR2(10),
+       agentie VARCHAR2(20),
+       nrShowuri INT,
+       PRIMARY KEY(id)
+);
+
+CREATE TABLE Relatie (
+       idPiesa INT,
+       idModel INT,
+       PRIMARY KEY (idPiesa, idModel),
+       FOREIGN KEY (idPiesa) REFERENCES Colectii(idPiesaPrincipala),
+       FOREIGN KEY (idModel) REFERENCES Modele(id)
+);
+ALTER TABLE Relatie ADD cantitate INT;
+ALTER TABLE Relatie ADD idConexiune INT;
+ALTER TABLE Relatie
+ADD CONSTRAINT uq_ColectiiC UNIQUE (idConexiune);
+ALTER TABLE Relatie DROP COLUMN idModel CASCADE CONSTRAINTS;
+
+
+CREATE TABLE Artisti(
+       id INT,
+       nume VARCHAR2(10),
+       prenume VARCHAR2(10),
+       tip VARCHAR2(20),
+       nrShowuri INT,
+       PRIMARY KEY(id)
+);
+
+CREATE TABLE ArtistiModele (
+       idArtist INT,
+       idModel INT,
+       PRIMARY KEY (idArtist, idModel),
+       FOREIGN KEY (idArtist) REFERENCES Artisti(id),
+       FOREIGN KEY (idModel) REFERENCES Modele(id)
+);
+
+CREATE TABLE Invitati(
+        id INT,
+        numeBrand VARCHAR2(20) UNIQUE,
+        nrInviatii INT,
+        idFashionWeek INT,
+        PRIMARY KEY(id),
+        FOREIGN KEY (idFashionWeek) REFERENCES FashionWeeks(id)
+);
+ALTER TABLE Invitati
+ADD CONSTRAINT CHK_Invitatii CHECK (nrInviatii >= 1);
+ALTER TABLE Invitati ADD perioada DATE;
+
+CREATE TABLE Informatii(
+         id INT,
+         locatie VARCHAR2(20),
+         dataSiOra TIMESTAMP UNIQUE,
+         tip VARCHAR2(20) UNIQUE,
+         descriere VARCHAR2(20),
+         idColectie INT,
+         PRIMARY KEY(id),
+         FOREIGN KEY (idColectie) REFERENCES Colectii(id)
+);
+
+ALTER TABLE Colectii ADD idInformatii INT;
+
+ALTER TABLE Colectii
+ADD CONSTRAINT fk_idInformatii FOREIGN KEY (idInformatii) REFERENCES Informatii(id);
+
+CREATE TABLE Staff(
+         id INT,
+         numarPersoane INT,
+         tip VARCHAR2(20),
+         PRIMARY KEY(id)
+);
+
+ALTER TABLE Informatii ADD idStaff INT;
+
+ALTER TABLE Informatii
+ADD CONSTRAINT fk_SInformatii FOREIGN KEY (idStaff) REFERENCES Staff(id);
+
+CREATE TABLE Media(
+         id INT,
+         tip VARCHAR2(20),
+         nrPersoane INT,
+         idFashionWeek INT,
+         PRIMARY KEY(id),
+         FOREIGN KEY (idFashionWeek) REFERENCES FashionWeeks(id)
+);
+
+
+
+2) Inserarea datelor 
+
+to_date('2001-12-10', 'yyyy-mm-dd')
+
+INSERT INTO FashionWeeks(id, nume, dataIncepere, dataIncheiere)
+VALUES(1, 'Milan Fashion Week', to_date('2023-02-01', 'yyyy-mm-dd'), to_date('2023-02-07', 'yyyy-mm-dd'));
+INSERT INTO FashionWeeks(id, nume, dataIncepere, dataIncheiere)
+VALUES (2, 'London Fashion Week', to_date('2023-01-01','yyyy-mm-dd'),to_date( '2023-01-07','yyyy-mm-dd'));
+INSERT INTO FashionWeeks(id, nume, dataIncepere, dataIncheiere)
+VALUES (6, 'New York FW', to_date('2023-07-01','yyyy-mm-dd'),to_date( '2023-07-07','yyyy-mm-dd'));
+INSERT INTO FashionWeeks(id, nume, dataIncepere, dataIncheiere)
+VALUES  (4, 'Paris Fashion Week', to_date('2023-04-01','yyyy-mm-dd'),to_date( '2023-04-07','yyyy-mm-dd'));
+INSERT INTO FashionWeeks(id, nume, dataIncepere, dataIncheiere)
+VALUES (5, 'Miami Fashion Week', to_date('2023-05-01','yyyy-mm-dd'),to_date( '2023-05-07','yyyy-mm-dd'));
+INSERT INTO FashionWeeks(id, nume, dataIncepere, dataIncheiere)
+VALUES (3, 'San Francisco FW', to_date('2023-03-01','yyyy-mm-dd'),to_date( '2023-03-07','yyyy-mm-dd'));
+
+
+INSERT INTO Staff(id, numarpersoane, tip) VALUES(1, 10, 'scena');
+INSERT INTO Staff(id, numarpersoane, tip) VALUES(2, 10, 'curatenie');
+INSERT INTO Staff(id, numarpersoane, tip) VALUES(3, 30, 'montaj');
+INSERT INTO Staff(id, numarpersoane, tip) VALUES(4, 10, 'scena');
+INSERT INTO Staff(id, numarpersoane, tip) VALUES(5, 20, 'scena');
+
+-- Inserare înregistrare 1
+INSERT INTO Media (id, tip, nrPersoane, idFashionWeek)
+VALUES (1, 'Televiziune', 100, 1);
+
+-- Inserare înregistrare 2
+INSERT INTO Media (id, tip, nrPersoane, idFashionWeek)
+VALUES (2, 'Revista', 50, 1);
+
+-- Inserare înregistrare 3
+INSERT INTO Media (id, tip, nrPersoane, idFashionWeek)
+VALUES (3, 'Online', 200, 2);
+
+-- Inserare înregistrare 4
+INSERT INTO Media (id, tip, nrPersoane, idFashionWeek)
+VALUES (4, 'Radio', 30, 2);
+
+-- Inserare înregistrare 5
+INSERT INTO Media (id, tip, nrPersoane, idFashionWeek)
+VALUES (5, 'Blog', 80, 6);
+
+-- Inserare înregistrare 1
+INSERT INTO Invitati (id, numeBrand, nrInviatii, idFashionWeek, perioada)
+VALUES (1, 'Brand1', 10, 1, TO_DATE('2023-06-01', 'YYYY-MM-DD'));
+
+-- Inserare înregistrare 2
+INSERT INTO Invitati (id, numeBrand, nrInviatii, idFashionWeek, perioada)
+VALUES (2, 'Brand2', 5, 2, TO_DATE('2023-06-02', 'YYYY-MM-DD'));
+
+-- Inserare înregistrare 3
+INSERT INTO Invitati (id, numeBrand, nrInviatii, idFashionWeek, perioada)
+VALUES (3, 'Brand3', 8, 1, TO_DATE('2023-06-03', 'YYYY-MM-DD'));
+
+-- Inserare înregistrare 4
+INSERT INTO Invitati (id, numeBrand, nrInviatii, idFashionWeek, perioada)
+VALUES (4, 'Brand4', 12, 3, TO_DATE('2023-06-04', 'YYYY-MM-DD'));
+
+-- Inserare înregistrare 5
+INSERT INTO Invitati (id, numeBrand, nrInviatii, idFashionWeek, perioada)
+VALUES (5, 'Brand5', 6, 2, TO_DATE('2023-06-05', 'YYYY-MM-DD'));
+
+
+
+-- Inserare înregistrare 1
+INSERT INTO CaseDeModa (id, nume, idDesignerPrincipal)
+VALUES (1, 'Chanel', NULL);
+
+-- Inserare înregistrare 2
+INSERT INTO CaseDeModa (id, nume, idDesignerPrincipal)
+VALUES (2, 'Gucci', NULL);
+
+-- Inserare înregistrare 3
+INSERT INTO CaseDeModa (id, nume, idDesignerPrincipal)
+VALUES (3, 'Versace', NULL);
+
+-- Inserare înregistrare 4
+INSERT INTO CaseDeModa (id, nume, idDesignerPrincipal)
+VALUES (4, 'Saint Laurent', NULL);
+
+-- Inserare înregistrare 5
+INSERT INTO CaseDeModa (id, nume, idDesignerPrincipal)
+VALUES (5, 'Max Mara', NULL);
+
+
+
+
+-- Inserare înregistrare 1
+INSERT INTO Designeri (id, nume, specialitate, idCaseDeModa)
+VALUES (1, 'Giorgio Armani', 'Specialitate1', 1);
+
+-- Inserare înregistrare 2
+INSERT INTO Designeri (id, nume, specialitate, idCaseDeModa)
+VALUES (2, 'Coco Chanel', 'Specialitate2', 2);
+
+-- Inserare înregistrare 3
+INSERT INTO Designeri (id, nume, specialitate, idCaseDeModa)
+VALUES (3, 'Ralph Lauren', 'Specialitate3', 4);
+
+-- Inserare înregistrare 4
+INSERT INTO Designeri (id, nume, specialitate, idCaseDeModa)
+VALUES (4, 'Alexander McQueen', 'Specialitate4', 3);
+
+-- Inserare înregistrare 5
+INSERT INTO Designeri (id, nume, specialitate, idCaseDeModa)
+VALUES (5, 'Paolo Sebastian', 'Specialitate5', 5);
+
+
+
+-- Actualizare înregistrare 1
+UPDATE CaseDeModa
+SET idDesignerPrincipal = 1
+WHERE id = 1;
+
+-- Actualizare înregistrare 2
+UPDATE CaseDeModa
+SET idDesignerPrincipal = 2
+WHERE id = 2;
+
+-- Actualizare înregistrare 3
+UPDATE CaseDeModa
+SET idDesignerPrincipal = 4
+WHERE id = 3;
+
+-- Actualizare înregistrare 4
+UPDATE CaseDeModa
+SET idDesignerPrincipal = 3
+WHERE id = 4;
+
+-- Actualizare înregistrare 5
+UPDATE CaseDeModa
+SET idDesignerPrincipal = 5
+WHERE id = 5;
+
+ALTER TABLE Informatii MODIFY (locatie VARCHAR2(50));
+
+-- Inserare înregistrare 1
+INSERT INTO Informatii (id, locatie, dataSiOra, tip, descriere, idColectie)
+VALUES (1, 'Avenue des Champs-Élysées', TO_TIMESTAMP('2023-05-26 10:00:00', 'YYYY-MM-DD HH24:MI:SS'), 'Event', 'Descriere1', NULL);
+
+-- Inserare înregistrare 2
+INSERT INTO Informatii (id, locatie, dataSiOra, tip, descriere, idColectie)
+VALUES (2, 'Rue de Rivoli', TO_TIMESTAMP('2023-05-27 15:30:00', 'YYYY-MM-DD HH24:MI:SS'), 'Prezen??', 'Descriere2', NULL);
+
+-- Inserare înregistrare 3
+INSERT INTO Informatii (id, locatie, dataSiOra, tip, descriere, idColectie)
+VALUES (3, 'Boulevard Saint-Germain', TO_TIMESTAMP('2023-05-28 19:00:00', 'YYYY-MM-DD HH24:MI:SS'), 'Fashion Show', 'Descriere3', NULL);
+
+ALTER TABLE Informatii
+DROP CONSTRAINT SYS_C008378;
+-- Inserare înregistrare 4
+INSERT INTO Informatii (id, locatie, dataSiOra, tip, descriere, idColectie)
+VALUES (4, 'Avenue Montaigne', TO_TIMESTAMP('2023-05-29 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), 'Event', 'Descriere4', NULL);
+
+-- Inserare înregistrare 5
+INSERT INTO Informatii (id, locatie, dataSiOra, tip, descriere, idColectie)
+VALUES (5, 'Rue du Faubourg Saint-Honoré', TO_TIMESTAMP('2023-05-30 17:30:00', 'YYYY-MM-DD HH24:MI:SS'), 'Prezen??', 'Descriere5', NULL);
+
+INSERT INTO Piese (id, tip, cod, material, pret)
+VALUES (1, 'Bluza', 'B001', 'Bumbac', 50);
+
+INSERT INTO Piese (id, tip, cod, material, pret)
+VALUES (2, 'Pantaloni', 'P002', 'Denim', 70);
+
+INSERT INTO Piese (id, tip, cod, material, pret)
+VALUES (3, 'Rochie', 'R003', 'M?tase', 120);
+
+INSERT INTO Piese (id, tip, cod, material, pret)
+VALUES (4, 'Sacou', 'S004', 'Lân?', 90);
+
+INSERT INTO Piese (id, tip, cod, material, pret)
+VALUES (5, 'Fust?', 'F005', 'Poliester', 60);
+
+ALTER TABLE Colectii MODIFY (nume VARCHAR2(50));
+INSERT INTO Colectii (id, nume, tip, idCasaDeModa, idFashionWeek, idDesigner, idInformatii, idPiesaPrincipala)
+VALUES (1, 'Colec?ia de prim?var?', 'Fashion', 1, 1, 1, 1, 1);
+
+INSERT INTO Colectii (id, nume, tip, idCasaDeModa, idFashionWeek, idDesigner, idInformatii, idPiesaPrincipala)
+VALUES (2, 'Colec?ia de var?', 'Streetwear', 2, 1, 2, 2, 2);
+
+INSERT INTO Colectii (id, nume, tip, idCasaDeModa, idFashionWeek, idDesigner, idInformatii, idPiesaPrincipala)
+VALUES (3, 'Colec?ia de toamn?', 'Elegant', 3, 2, 3, 3, 3);
+
+INSERT INTO Colectii (id, nume, tip, idCasaDeModa, idFashionWeek, idDesigner, idInformatii, idPiesaPrincipala)
+VALUES (4, 'Colec?ia de iarn?', 'Casual', 4, 2, 4, 4, 4);
+
+INSERT INTO Colectii (id, nume, tip, idCasaDeModa, idFashionWeek, idDesigner, idInformatii, idPiesaPrincipala)
+VALUES (5, 'Colec?ia de antrenament', 'Sport', 5, 3, 5, 5, 5);
+
+UPDATE Informatii SET idStaff = 1, idColectie = 1 WHERE id = 1;
+UPDATE Informatii SET idStaff = 2, idColectie = 2 WHERE id = 2;
+UPDATE Informatii SET idStaff = 3, idColectie = 3 WHERE id = 3;
+UPDATE Informatii SET idStaff = 4, idColectie = 4 WHERE id = 4;
+UPDATE Informatii SET idStaff = 5, idColectie = 5 WHERE id = 5;
+
+INSERT INTO Relatie (idPiesa, idConexiune, cantitate)
+VALUES (1, 5, 1);
+INSERT INTO Relatie (idPiesa, idConexiune, cantitate)
+VALUES (2, 2, 1);
+INSERT INTO Relatie (idPiesa, idConexiune, cantitate)
+VALUES (3, 1, 1);
+INSERT INTO Relatie (idPiesa, idConexiune, cantitate)
+VALUES (4, 4, 1);
+INSERT INTO Relatie (idPiesa, idConexiune, cantitate)
+VALUES (5, 3, 1);
+
+
+-- Actualizare înregistrare 1
+UPDATE Piese
+SET idColectie = 1
+WHERE id = 1;
+
+-- Actualizare înregistrare 2
+UPDATE Piese
+SET idColectie = 2
+WHERE id = 2;
+
+-- Actualizare înregistrare 3
+UPDATE Piese
+SET idColectie = 4
+WHERE id = 3;
+
+-- Actualizare înregistrare 4
+UPDATE Piese
+SET idColectie = 3
+WHERE id = 4;
+
+-- Actualizare înregistrare 5
+UPDATE Piese
+SET idColectie = 5
+WHERE id = 5;
+
+
+-- Actualizare înregistrare 1
+UPDATE Colectii
+SET idRelatie = 1
+WHERE id = 1;
+
+-- Actualizare înregistrare 2
+UPDATE Colectii
+SET idRelatie = 2
+WHERE id = 2;
+
+-- Actualizare înregistrare 3
+UPDATE Colectii
+SET idRelatie = 4
+WHERE id = 3;
+
+-- Actualizare înregistrare 4
+UPDATE Colectii
+SET idRelatie = 3
+WHERE id = 4;
+
+-- Actualizare înregistrare 5
+UPDATE Colectii
+SET idRelatie = 5
+WHERE id = 5;
+
+
+INSERT INTO Artisti (id, nume, prenume, tip, nrshowuri) VALUES (1, 'Rey', 'Marryson', 'make-up artist', 7);
+INSERT INTO Artisti (id, nume, prenume, tip, nrshowuri) VALUES (2, 'Maria', 'Anghel', 'make-up artist', 7);
+INSERT INTO Artisti (id, nume, prenume, tip, nrshowuri) VALUES (3, 'Blake', 'Richardson', 'hair dresser', 7);
+INSERT INTO Artisti (id, nume, prenume, tip, nrshowuri) VALUES (4, 'Filip', 'David', 'make-up artist', 7);
+INSERT INTO Artisti (id, nume, prenume, tip, nrshowuri) VALUES (5, 'Carina', 'Marryson', 'make-up artist', 7);
+INSERT INTO Artisti (id, nume, prenume, tip, nrshowuri) VALUES (6, 'Humbleau', 'Marryson', 'make-up artist', 7);
+INSERT INTO Artisti (id, nume, prenume, tip, nrshowuri) VALUES (7, 'Minerva', 'Marryson', 'make-up artist', 7);
+INSERT INTO Artisti (id, nume, prenume, tip, nrshowuri) VALUES (8, 'Draco', 'Marryson', 'hair dresser', 7);
+INSERT INTO Artisti (id, nume, prenume, tip, nrshowuri) VALUES (9, 'Annabeth', 'Marryson', 'hair dresser', 7);
+INSERT INTO Artisti (id, nume, prenume, tip, nrshowuri) VALUES (10, 'Luy', 'Tomlinson', 'make-up artist', 7);
+delete from Artisti;
+INSERT INTO Artisti (id, nume, prenume, tip, nrShowuri)
+VALUES (1, 'Smith', 'John', 'make-up artist', 5);
+
+INSERT INTO Artisti (id, nume, prenume, tip, nrShowuri)
+VALUES (2, 'Johnson', 'Emma', 'hair dresser', 3);
+
+INSERT INTO Artisti (id, nume, prenume, tip, nrShowuri)
+VALUES (3, 'Brown', 'Michael', 'make-up artist', 7);
+
+INSERT INTO Artisti (id, nume, prenume, tip, nrShowuri)
+VALUES (4, 'Davis', 'Sophia', 'hair dresser', 4);
+
+INSERT INTO Artisti (id, nume, prenume, tip, nrShowuri)
+VALUES (5, 'Miller', 'Oliver', 'make-up artist', 6);
+
+INSERT INTO Artisti (id, nume, prenume, tip, nrShowuri)
+VALUES (6, 'Wilson', 'Ava', 'hair dresser', 2);
+
+INSERT INTO Artisti (id, nume, prenume, tip, nrShowuri)
+VALUES (7, 'Anderson', 'Liam', 'make-up artist', 4);
+
+INSERT INTO Artisti (id, nume, prenume, tip, nrShowuri)
+VALUES (8, 'Taylor', 'Mia', 'hair dresser', 5);
+
+INSERT INTO Artisti (id, nume, prenume, tip, nrShowuri)
+VALUES (9, 'Clark', 'Ella', 'make-up artist', 3);
+
+INSERT INTO Artisti (id, nume, prenume, tip, nrShowuri)
+VALUES (10, 'Walker', 'Noah', 'hair dresser', 6);
+
+ALTER TABLE Modele MODIFY (agentie VARCHAR2(50));
+INSERT INTO Modele (id, nume, prenume, agentie, nrShowuri)
+VALUES (1, 'Gisele', 'Bundchen', 'IMG Models', 5);
+INSERT INTO Modele (id, nume, prenume, agentie, nrShowuri)
+VALUES
+      (2, 'Cara', 'Delevingne', 'Elite Model Management', 3);
+INSERT INTO Modele (id, nume, prenume, agentie, nrShowuri)
+VALUES
+      (3, 'Naomi', 'Campbell', 'DNA Model Management', 7);
+INSERT INTO Modele (id, nume, prenume, agentie, nrShowuri)
+VALUES
+      (4, 'Adriana', 'Lima', 'Ford Models', 2);
+INSERT INTO Modele (id, nume, prenume, agentie, nrShowuri)
+VALUES
+      (5, 'Kate', 'Moss', 'Storm Model Management', 4);
+INSERT INTO Modele (id, nume, prenume, agentie, nrShowuri)
+VALUES
+      (6, 'Karlie', 'Kloss', 'Next Management', 6);
+INSERT INTO Modele (id, nume, prenume, agentie, nrShowuri)
+VALUES
+      (7, 'Bella', 'Hadid', 'IMG Models', 3);
+INSERT INTO Modele (id, nume, prenume, agentie, nrShowuri)
+VALUES
+      (8, 'Cindy', 'Crawford', 'Wilhelmina Models', 5);
+INSERT INTO Modele (id, nume, prenume, agentie, nrShowuri)
+VALUES
+      (9, 'Liu', 'Wen', 'Women Management', 4);
+INSERT INTO Modele (id, nume, prenume, agentie, nrShowuri)
+VALUES
+      (10, 'Joan', 'Smalls', 'IMG Models', 7);
+
+
+INSERT INTO ArtistiModele (idArtist, idModel) VALUES (1, 10);
+INSERT INTO ArtistiModele (idArtist, idModel) VALUES (2, 9);
+INSERT INTO ArtistiModele (idArtist, idModel) VALUES (3, 8);
+INSERT INTO ArtistiModele (idArtist, idModel) VALUES (4, 7);
+INSERT INTO ArtistiModele (idArtist, idModel) VALUES (5, 6);
+INSERT INTO ArtistiModele (idArtist, idModel) VALUES (6, 5);
+INSERT INTO ArtistiModele (idArtist, idModel) VALUES (7, 4);
+INSERT INTO ArtistiModele (idArtist, idModel) VALUES (8, 2);
+INSERT INTO ArtistiModele (idArtist, idModel) VALUES (9, 1);
+INSERT INTO ArtistiModele (idArtist, idModel) VALUES (10, 3);
+
+ALTER TABLE relatie
+ADD CONSTRAINT fk_relatie_modele
+FOREIGN KEY (idconexiune)
+REFERENCES modele (id);
+
+SELECT constraint_name
+FROM user_constraints
+WHERE table_name = 'COLECTII' AND r_constraint_name IN (
+    SELECT constraint_name
+    FROM user_constraints
+    WHERE table_name = 'RELATIE'
+);
+
+ALTER TABLE colectii
+DROP CONSTRAINT fk_idrelatie;
+
+ALTER TABLE colectii
+DROP COLUMN idrelatie;
+
+SELECT constraint_name
+FROM user_constraints
+WHERE table_name = 'INFORMATII' AND r_constraint_name IN (
+    SELECT constraint_name
+    FROM user_constraints
+    WHERE table_name = 'COLECTII'
+);
+
+ALTER TABLE informatii
+DROP CONSTRAINT SYS_C008379;
+
+ALTER TABLE informatii
+DROP COLUMN idcolectie;
+
+SELECT constraint_name
+FROM user_constraints
+WHERE table_name = 'COLECTII' AND r_constraint_name IN (
+    SELECT constraint_name
+    FROM user_constraints
+    WHERE table_name = 'DESIGNERI'
+);
+
+ALTER TABLE colectii
+DROP CONSTRAINT FK_IDDESIGNER;
+
+ALTER TABLE colectii
+DROP COLUMN iddesigner;
+
+
+SELECT CONSTRAINT_NAME
+FROM ALL_CONSTRAINTS
+WHERE CONSTRAINT_TYPE = 'R'
+  AND R_CONSTRAINT_NAME = 'IDPIESA';
+
+ALTER TABLE COLECTII
+ADD CONSTRAINT uq_IDINFORMATII UNIQUE (IDINFORMATII);
+
+
+SELECT CONSTRAINT_NAME
+FROM ALL_CONSTRAINTS
+WHERE TABLE_NAME = 'RELATIE' AND CONSTRAINT_TYPE = 'P' AND CONSTRAINT_NAME LIKE 'SYS_%';
+
+ALTER TABLE RELATIE
+DROP CONSTRAINT SYS_C008363;
+
+ALTER TABLE RELATIE
+ADD CONSTRAINT uk_coloana1 UNIQUE (IDPIESA);
+
+ALTER TABLE RELATIE
+ADD CONSTRAINT pk_cheie_primara PRIMARY KEY (IDPIESA, IDCONEXIUNE);
+
+ALTER TABLE RELATIE
+DROP CONSTRAINT PK_CHEIE_PRIMARA;
+
+ALTER TABLE RELATIE
+DROP CONSTRAINT UQ_COLECTIIC;
+
+SELECT TABLE_NAME, COLUMN_NAME
+FROM ALL_CONS_COLUMNS
+WHERE CONSTRAINT_NAME = 'UQ_COLECTIIC';
+
+
+ALTER TABLE RELATIE
+ADD CONSTRAINT uk_coloana1 UNIQUE (IDPIESA);
+
+ALTER TABLE RELATIE
+ADD CONSTRAINT uk_coloana2 UNIQUE (IDCONEXIUNE);
+
+ALTER TABLE RELATIE
+ADD CONSTRAINT pk_cheie_primara PRIMARY KEY (IDPIESA, IDCONEXIUNE);
+
+ALTER TABLE RELATIE
+ADD CONSTRAINT fk_cheie_straina1 FOREIGN KEY (IDPIESA) REFERENCES COLECTII(IDPIESAPRINCIPALA);
+
+ALTER TABLE RELATIE
+ADD CONSTRAINT uk_cheie_dubla UNIQUE (IDPIESA, IDCONEXIUNE);
+
+-- Inserarea 1
+INSERT INTO Piese (id,tip, cod, material, pret, idColectie)
+VALUES (6,'Rochie', 'RC001', 'Mătase', 1500, 1);
+
+-- Inserarea 2
+INSERT INTO Piese (id,tip, cod, material, pret, idColectie)
+VALUES (7,'Pantaloni', 'PN002', 'Stofă fină', 2000, 2);
+
+-- Inserarea 3
+INSERT INTO Piese (id,tip, cod, material, pret, idColectie)
+VALUES (8,'Bluză', 'BZ003', 'Dantelă de lux', 2500, 1);
+
+-- Inserarea 4
+INSERT INTO Piese (id,tip, cod, material, pret, idColectie)
+VALUES (9,'Sacou', 'SC004', 'Lână prețioasă', 3000, 3);
+
+-- Inserarea 5
+INSERT INTO Piese (id,tip, cod, material, pret, idColectie)
+VALUES (10,'Fustă', 'FT005', 'Brocart valoros', 1800, 2);
+
+-- Inserarea 6
+INSERT INTO Piese (id,tip, cod, material, pret, idColectie)
+VALUES (11,'Cămașă', 'CM006', 'Mătase naturală', 2200, 3);
+
+-- Inserarea 7
+INSERT INTO Piese (id,tip, cod, material, pret, idColectie)
+VALUES (12,'Geacă', 'GC007', 'Piele exotică', 4000, 4);
+
+-- Inserarea 8
+INSERT INTO Piese (id,tip, cod, material, pret, idColectie)
+VALUES (13,'Tricou', 'TC008', 'Bumbac organic', 1200, 5);
+
+-- Inserarea 9
+INSERT INTO Piese (id,tip, cod, material, pret, idColectie)
+VALUES (14,'Pardesiu', 'PD009', 'Lână prețioasă', 2800, 4);
+
+-- Inserarea 10
+INSERT INTO Piese (id,tip, cod, material, pret, idColectie)
+VALUES (15,'Blugi', 'BG010', 'Denim de lux', 1500, 2);
+
+INSERT INTO Modele (id, nume, prenume, agentie, nrShowuri) 
+VALUES (11, 'Gigi', 'Hadid', 'IMG Models', 5); 
+
+INSERT INTO Modele (id, nume, prenume, agentie, nrShowuri) 
+VALUES (12, 'Naomi', 'Campbell', 'DNA Model Management', 3); 
+
+INSERT INTO Modele (id, nume, prenume, agentie, nrShowuri) 
+VALUES (13, 'Cara', 'Delevingne', 'Storm Model Management', 7); 
+
+INSERT INTO Modele (id, nume, prenume, agentie, nrShowuri) 
+VALUES (14, 'Bella', 'Hadid', 'Elite Model Management', 4); 
+
+INSERT INTO Modele (id, nume, prenume, agentie, nrShowuri) 
+VALUES (15, 'Kendall', 'Jenner', 'The Society Management', 6); 
+
+INSERT INTO Modele (id, nume, prenume, agentie, nrShowuri) 
+VALUES (16, 'Adriana', 'Lima', 'Wilhelmina Models', 8); 
+
+INSERT INTO Modele (id, nume, prenume, agentie, nrShowuri) 
+VALUES (17, 'Liu', 'Wen', 'Marilyn Agency', 5); 
+
+INSERT INTO Modele (id, nume, prenume, agentie, nrShowuri) 
+VALUES (18, 'Karlie', 'Kloss', 'Next Management', 6); 
+
+INSERT INTO Modele (id, nume, prenume, agentie, nrShowuri) 
+VALUES (19, 'Candice', 'Swanepoel', 'IMG Models', 4); 
+
+INSERT INTO Modele (id, nume, prenume, agentie, nrShowuri) 
+VALUES (20, 'Rosie', 'Huntington', 'IMG Models', 6); 
+
+INSERT INTO ArtistiModele (idArtist, idModel) 
+VALUES (1, 11); 
+
+INSERT INTO ArtistiModele (idArtist, idModel) 
+VALUES (1, 12); 
+
+INSERT INTO ArtistiModele (idArtist, idModel) 
+VALUES (1, 13); 
+
+INSERT INTO ArtistiModele (idArtist, idModel) 
+VALUES (1, 14); 
+
+INSERT INTO ArtistiModele (idArtist, idModel) 
+VALUES (5, 15); 
+
+INSERT INTO ArtistiModele (idArtist, idModel) 
+VALUES (5, 16); 
+
+INSERT INTO ArtistiModele (idArtist, idModel) 
+VALUES (5, 17); 
+
+INSERT INTO ArtistiModele (idArtist, idModel) 
+VALUES (8, 18); 
+
+INSERT INTO ArtistiModele (idArtist, idModel) 
+VALUES (9, 19); 
+
+INSERT INTO ArtistiModele (idArtist, idModel) 
+VALUES (10, 20); 

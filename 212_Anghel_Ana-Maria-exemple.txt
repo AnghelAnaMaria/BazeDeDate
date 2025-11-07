@@ -1,0 +1,204 @@
+Exercitiul 12
+
+1)
+---subcerere sincronizaa 3 tabele; functii pe siruri de caractere, functii pe date calendaristice 
+
+---Afisam piesele care sunt mai scumpe decat media pieselor dintr-o colectie si numele acsei de moda este "Georgio Armani". 
+
+De asemenea, afisam data curenta ca ‘DataCurenta’. 
+
+SELECT p.tip AS tipPiesa, upper(c.nume) AS numeColecție, lower(cd.nume) AS numeCasaDeModa, CURRENT_DATE as DataCurenta, 
+
+fw.dataincepere 
+
+ 
+FROM dual, Piese p 
+
+JOIN Colectii c ON p.idColectie = c.id 
+
+JOIN CaseDeModa cd ON c.idCasaDeModa = cd.id 
+
+JOIN FashionWeeks fw ON fw.id= c.idfashionweek 
+
+WHERE p.pret >( 
+
+                SELECT AVG(pret) 
+
+                FROM Piese 
+
+                WHERE idColectie = c.id AND cd.nume = 'Georgio Armani' 
+
+                 
+
+GROUP BY fw.nume 
+
+); 
+
+
+2)
+---Subcerere nesincronizata in clausa FROM; clauza WITH; CASE, functie pe data calendaristica 
+
+---Afisam numele colectiilor pentru fashion-week-urile care au data de incepere dupa 2023-01-01. Adaugam si o coloana eichetata 
+
+Extra cu informatii extra despre prezentari. 
+
+WITH Subquery AS ( 
+
+  SELECT c.nume, fw.dataIncepere, fw.dataIncheiere, 
+
+         CASE 
+
+           WHEN cd.nume = 'Chanel' THEN 'Prezentare dubla' 
+
+           WHEN cd.nume = 'Alexander McQueen' THEN 'Pre-Event' 
+
+           ELSE 'Nimic' 
+
+         END AS Extra 
+
+  FROM Colectii c 
+
+  JOIN CaseDeModa cd ON c.idCasaDeModa = cd.id 
+
+  JOIN FashionWeeks fw ON c.idFashionWeek = fw.id 
+
+  WHERE fw.dataIncepere >= to_date('2023-01-01', 'YYYY-MM-DD') 
+
+) 
+
+SELECT * 
+
+FROM Subquery; 
+
+
+
+3)
+
+---Selectam artistii care se ocupa se mai mule modele. 
+
+---filtrare la nivel de grupuri; functia grup COUNT 
+
+SELECT a.nume AS artist, COUNT(am.idModel) AS numar_modele 
+
+FROM Artisti a 
+
+JOIN ArtistiModele am ON a.id = am.idArtist 
+
+JOIN Modele m ON am.idModel = m.id 
+
+GROUP BY a.nume 
+
+HAVING COUNT(am.idModel) >1; 
+
+
+4)
+
+---NVL si DECODE 
+
+---Afisam id-ul, locatia si o coloana noua numita ‘Valoare’ pentru staff-uri. Pentru staff-urile care au pretul pe ora de 1000 se 
+
+va afisa atributul ‘scump’ pe coloana noua ('valoare'), iar pentru restul se va afisa ‘-’. 
+
+SELECT s.id, NVL(DECODE(s.pretpeora, '1000', 'Scump', '-'), 'Nespecificat') AS Valoare, i.locatie 
+
+FROM Staff s join Informatii i ON s.id= i.idstaff; 
+
+
+5)
+
+---Afisam numele modelelor care poarta piese principale la show-uri si care au make-up artist. 
+
+---subcerere sincronizata  
+
+SELECT DISTINCT m.nume, prenume, cm.nume 
+
+FROM Modele m  
+
+JOIN relatie r ON m.id= r.idconexiune 
+
+JOIN colectii c ON r.idpiesa=c.id 
+
+JOIN casedemoda cm ON cm.id=c.idcasademoda 
+
+JOIN piese p ON p.idcolectie= c.id 
+
+WHERE m.id IN (SELECT idModel 
+
+               FROM ArtistiModele 
+
+               WHERE idArtist IN (SELECT id 
+
+                                  FROM Artisti 
+
+                                  WHERE tip = 'make-up artist')) 
+
+AND m.id IN (SELECT idconexiune 
+
+             FROM relatie); 
+
+
+
+
+
+
+Exercitiul 13
+
+---Updatarea datelor si utilizare de subcereri
+
+---Operatie de update; pentru piesele care costa mai mult de 1000 de lei vom scrie atributul ‘Materiale scumpe’ la coloana material. 
+UPDATE Piese 
+SET material = ( 
+  SELECT 'Materiale scumpe' 
+  FROM dual 
+)
+WHERE pret > 1000; 
+
+
+---Updatam piesele care sunt din colectia de tip Streetwear, modificand pretul corespunzator. 
+UPDATE Piese 
+SET pret = pret * 1.1 
+WHERE idColectie IN (SELECT id FROM Colectii WHERE tip = 'Streetwear'); 
+rollback; 
+
+
+---Operatie update; schimbam pretul pieselor din colectia de tip ‘Elegant’ cu pretul mediu al pieselor care se afla in aceeasi colectie . 
+UPDATE Piese 
+SET pret = ( 
+    SELECT AVG(pret) 
+    FROM Piese 
+    WHERE idColectie = Piese.idColectie 
+) 
+WHERE idColectie IN ( 
+    SELECT id 
+    FROM Colectii 
+    WHERE tip = 'Elegant' 
+); 
+rollback; 
+
+
+
+
+
+
+---Delete si utilizare de subcereri
+
+
+---Stergem piesele care sunt din colectia de tipul sport. 
+
+DELETE FROM Piese
+WHERE idcolectie IN (SELECT id FROM Colectii WHERE tip='Sport');
+rollback;
+
+
+---Stergem invitatii media care participa la Milan Fashion Week. 
+
+DELETE FROM media
+WHERE idfashionweek IN (SELECT id FROM fashionweeks WHERE nume='Milan Fashion Week');
+rollback;
+
+
+---Stergem colectiile care apartin casei de moda 'Alexander McQueen'. 
+
+DELETE FROM Colectii
+WHERE idCasaDeModa IN (SELECT id FROM CaseDeModa WHERE nume = 'Alexander McQueen');
+rollback;
