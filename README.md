@@ -1,3 +1,3 @@
-## Diagrama Entitate–Relație (ERD)
+Diagrama Entitate–Relație (ERD)
 
 ![ERD](docs/ERD.png)
