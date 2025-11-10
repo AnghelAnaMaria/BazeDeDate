@@ -1,4 +1,4 @@
-Proiectul acoperă proiectarea, implementarea și exploatarea neprocedurală a unei baze de date relaționale care se ocupă cu realizarea prezentărilor de modă.
+This project involves the design, implementation, and non-procedural management of a relational database for organizing fashion shows.
 
-Proiectul este realizat în sistemul Oracle.
+The database has been developed using the Oracle system.
 
